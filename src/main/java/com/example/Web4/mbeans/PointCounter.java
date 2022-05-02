@@ -15,11 +15,11 @@ import java.util.Map;
 
 @ManagedResource
 @Component
-public class PointCounter implements NotificationPublisherAware, PointCounterMXBean, Serializable {
+public class PointCounter implements NotificationPublisherAware, Serializable {
     private NotificationPublisher notificationPublisher;
     private final Map<String, Integer> usersPoints = new HashMap<>();
     private final Map<String, Integer> usersHits = new HashMap<>();
-    private int sequenceNumber;
+    private final Map<String, Integer> usersSeq = new HashMap<>();
 
     public void addPoint(Point point) {
         String username = point.getUser().getUsername();
@@ -31,10 +31,13 @@ public class PointCounter implements NotificationPublisherAware, PointCounterMXB
             usersHits.put(username, hits + 1);
         }
         if ((points + 1) % 5 == 0) {
+            int seq = 0;
+            if (usersSeq.containsKey(username)) seq = usersSeq.remove(username);
             notificationPublisher.sendNotification(new Notification(
-                    "Notification!", this, sequenceNumber++,
+                    "Notification!", this, seq,
                     System.currentTimeMillis(), "The number of points is a multiply of 5"
             ));
+            usersSeq.put(username, seq + 1);
         }
     }
 
@@ -44,25 +47,21 @@ public class PointCounter implements NotificationPublisherAware, PointCounterMXB
     }
 
     @ManagedAttribute
-    @Override
     public Map<String, Integer> getUserPoints() {
         return this.usersPoints;
     }
 
     @ManagedAttribute
-    @Override
     public Map<String, Integer> getUserHits() {
         return this.usersHits;
     }
 
     @ManagedOperation
-    @Override
     public Integer getPoints(String username) {
         return this.usersPoints.get(username);
     }
 
     @ManagedOperation
-    @Override
     public Integer getHits(String username) {
         return this.usersHits.get(username);
     }

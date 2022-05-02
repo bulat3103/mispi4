@@ -13,7 +13,7 @@ import java.util.Map;
 
 @ManagedResource
 @Component
-public class AverageClickTime implements AverageClickTimeMXBean, Serializable {
+public class AverageClickTime implements Serializable {
     private final Map<String, Integer> userPointsCount = new HashMap<>();
     private final Map<String, Long> userFirstClick = new HashMap<>();
     private final Map<String, Long> userLastClick = new HashMap<>();
@@ -30,25 +30,7 @@ public class AverageClickTime implements AverageClickTimeMXBean, Serializable {
         userLastClick.put(point.getUser().getUsername(), System.currentTimeMillis());
     }
 
-    @ManagedAttribute
-    @Override
-    public Map<String, Integer> getUserPointsCount() {
-        return this.userPointsCount;
-    }
-
-    @ManagedAttribute
-    @Override
-    public Map<String, Long> getUserFirstClick() {
-        return this.userFirstClick;
-    }
-
-    @Override
-    public Map<String, Long> getUserLastClick() {
-        return this.userLastClick;
-    }
-
     @ManagedOperation
-    @Override
     public long getAverageTime(String username) {
         if (!userPointsCount.containsKey(username)) return -1;
         return (userLastClick.get(username) - userFirstClick.get(username)) / userPointsCount.get(username);
